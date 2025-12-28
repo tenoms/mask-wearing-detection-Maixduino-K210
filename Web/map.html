@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN" style="height: 100%">
+<head>
+  <meta charset="utf-8">
+  <title>口罩佩戴系统数据中心</title>
+  <link href="mask.png" rel="icon">
+  <script src="echarts.js"></script>
+</head>
+
+<body style="height: 100%; margin: 0" onload="showList()">
+	
+	<!-- 居中显示 -->
+	<center>
+		<h2 style="margin: 5px;">
+			口罩佩戴检测系统数据端
+			<small> -v1.0</small>
+			<!-- <div id="count" style="display: inline-flex;">总数统计</div> -->
+		</h2>
+		<form>
+		<div id="list"></div>
+		</form>
+		<div id="count" style="display: inline-flex;">统计</div>
+		
+		
+
+	</center>
+  <div id="container" style="height: 90%"></div>
+<!--  
+  <script type="text/javascript">
+    
+  </script> -->
+</body>
+
+<script>
+	date = [];//全局变量
+	xtime = [];
+	u_mask = [],w_mask = [],mask = [];
+	count_data = [];
+	
+	function display(){
+		var dom = document.getElementById('container');
+			
+			console.log(date.length);
+			console.log(date[0]);
+			for (var item in date[0]){
+				// var temp = Number(item.substring(4));
+				// temp += 1;
+				// console.log(Number(item.substring(4)));
+				xtime.push(item.substring(4));
+				u_mask.push(date[0][item]);//不能用.的方式取
+				w_mask.push(date[1][item]);
+				mask.push(date[2][item]);
+						
+			}
+			console.log(xtime);
+			console.log(u_mask);
+			console.log(w_mask);
+			console.log(mask);
+			                        
+			
+			
+		    var myChart = echarts.init(dom, null, {
+		      renderer: 'canvas',
+		      useDirtyRect: false
+		    });
+		    var app = {};
+		    
+		    var option;
+		
+		    const posList = [
+		  'left',
+		  'right',
+		  'top',
+		  'bottom',
+		  'inside',
+		  'insideTop',
+		  'insideLeft',
+		  'insideRight',
+		  'insideBottom',
+		  'insideTopLeft',
+		  'insideTopRight',
+		  'insideBottomLeft',
+		  'insideBottomRight'
+		];
+		app.configParameters = {
+		  rotate: {
+		    min: -90,
+		    max: 90
+		  },
+		  align: {
+		    options: {
+		      left: 'left',
+		      center: 'center',
+		      right: 'right'
+		    }
+		  },
+		  verticalAlign: {
+		    options: {
+		      top: 'top',
+		      middle: 'middle',
+		      bottom: 'bottom'
+		    }
+		  },
+		  position: {
+		    options: posList.reduce(function (map, pos) {
+		      map[pos] = pos;
+		      return map;
+		    }, {})
+		  },
+		  distance: {
+		    min: 0,
+		    max: 100
+		  }
+		};
+		app.config = {
+		  rotate: 90,
+		  align: 'left',
+		  verticalAlign: 'middle',
+		  position: 'insideBottom',
+		  distance: 15,
+		  onChange: function () {
+		    const labelOption = {
+		      rotate: app.config.rotate,
+		      align: app.config.align,
+		      verticalAlign: app.config.verticalAlign,
+		      position: app.config.position,
+		      distance: app.config.distance
+		    };
+		    myChart.setOption({
+		      series: [
+		        {
+		          label: labelOption
+		        },
+		        {
+		          label: labelOption
+		        },
+		        {
+		          label: labelOption
+		        },
+		        {
+		          label: labelOption
+		        }
+		      ]
+		    });
+		  }
+		};
+		const labelOption = {
+		  show: true,
+		  position: app.config.position,
+		  distance: app.config.distance,
+		  align: app.config.align,
+		  verticalAlign: app.config.verticalAlign,
+		  rotate: app.config.rotate,
+		  formatter: '{c}  {name|{a}}',
+		  fontSize: 14,
+		  rich: {
+		    name: {}
+		  }
+		};
+		option = {
+		
+		  color:['#ee6666','#fac858','#3ba272'],
+		  tooltip: {
+		    trigger: 'axis',
+		    axisPointer: {
+		      type: 'shadow'
+		    }
+		  },
+		  legend: {
+		    data: ['未佩戴', '未正确佩戴', '正确佩戴']
+		  },
+		  toolbox: {
+		    show: true,
+		    orient: 'vertical',
+		    left: 'right',
+		    top: 'center',
+		    feature: {
+		      mark: { show: true },
+		      dataView: { show: true, readOnly: false },
+		      magicType: { show: true, type: ['line', 'bar', 'stack'] },
+		      restore: { show: true },
+		      saveAsImage: { show: true }
+		    }
+		  },
+		  xAxis: [
+		    {
+		      type: 'category',
+		      axisTick: { show: false },
+		      data: xtime
+		    }
+		  ],
+		  yAxis: [
+		    {
+		      type: 'value'
+		    }
+		  ],
+		  series: [
+		    {
+		      name: '未佩戴',
+		      type: 'bar',
+		      barGap: 0,
+		      label: labelOption,
+		      emphasis: {
+		        focus: 'series'
+		      },
+		      data: u_mask
+		    },
+		    {
+		      name: '未正确佩戴',
+		      type: 'bar',
+		      label: labelOption,
+		      emphasis: {
+		        focus: 'series'
+		      },
+		      data: w_mask
+		    },
+		    {
+		      name: '正确佩戴',
+		      type: 'bar',
+		      label: labelOption,
+		      emphasis: {
+		        focus: 'series'
+		      },
+		      data: mask
+		    }
+		  ]
+		};
+		
+		    if (option && typeof option === 'object') {
+		      myChart.setOption(option);
+		    }
+		
+		    window.addEventListener('resize', myChart.resize);
+	};
+	// display();
+	function getData(str){
+		//清空数组
+		date.length = 0;
+		xtime.length = 0;
+		u_mask.length = 0;
+		w_mask.length = 0;
+		mask.length = 0;
+		//默认地址栏进入时查询当前日期数据
+		if (str == ""){
+			// date = [];//全局变量
+			var day = new Date();
+			var year = day.getFullYear();    //  返回的是年份
+			 var month = day.getMonth() + 1;  //  返回的月份上个月的月份，记得+1才是当月
+			 var dates = day.getDate();  
+			 if(month<10)
+				month="0"+month;
+			 if(dates<10)
+				dates="0"+dates;
+			 str = year + "-" + month + "-" + dates;
+		}
+	
+		// str = '2022-10-31';
+		console.log(str);
+		
+		if (window.XMLHttpRequest)
+		{
+		    // IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+		    xmlhttp=new XMLHttpRequest();
+		}
+		else
+		{
+		    // IE6, IE5 浏览器执行代码
+		    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		xmlhttp.onreadystatechange=function()
+		{
+		    if (xmlhttp.readyState==4 && xmlhttp.status==200)
+		    {
+		  //       date=xmlhttp.responseText;
+				// date = JSON.parse(date);
+				// console.log(date);
+				//return date;
+				var temp = xmlhttp.responseText;
+				temp = JSON.parse(temp);
+				date = JSON.parse(temp["detail_data"]);
+				count_data = JSON.parse(temp["count_data"]);
+				// console.log("1108");
+				// console.log(temp);
+				// console.log(date);
+				console.log("======");
+				// console.log(count_data);
+				// console.log(count_data.u_mask);
+				//可配置颜色
+				// document.getElementById("count").innerHTML = '<font color="red">未佩戴口罩:'+count_data.u_mask +'</font>'
+				// +" 未正确佩戴口罩:"+count_data.w_mask+" 佩戴口罩:"+count_data.mask;
+				var all_count = Number(count_data.u_mask) + Number(count_data.w_mask) + Number(count_data.mask);
+				var level = '';
+				if (all_count > 10 && Number(count_data.u_mask)/all_count > 0.3 ){
+					level = '<font color="red">(请加强监督)</font>';
+				}else if (all_count > 10 && Number(count_data.mask)/all_count > 0.8){
+					level = '<font color="green">(良好)</font>';
+				}
+				document.getElementById("count").innerHTML = '未佩戴口罩:'+count_data.u_mask
+				+" 未正确佩戴口罩:"+count_data.w_mask+" 佩戴口罩:"+count_data.mask+" 总计:"+all_count+level;
+		    }
+		}
+		xmlhttp.open("GET","query.php?date="+str,false);//同步
+		xmlhttp.send();
+		display();
+		// return date;
+	}
+	getData("");
+
+	function queryDetail(str){
+		console.log(str);
+		
+		if (window.XMLHttpRequest)
+		{
+		    // IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+		    xmlhttp=new XMLHttpRequest();
+		}
+		else
+		{
+		    // IE6, IE5 浏览器执行代码
+		    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		xmlhttp.onreadystatechange=function()
+		{
+		    if (xmlhttp.readyState==4 && xmlhttp.status==200)
+		    {
+		        date=xmlhttp.responseText;
+				console.log(date);
+		    }
+		}
+		xmlhttp.open("GET","query.php?date="+str,true);
+		xmlhttp.send();
+	}
+	
+	function showList()
+	{
+	    if (window.XMLHttpRequest)
+	    {
+	        // IE7+, Firefox, Chrome, Opera, Safari 浏览器执行代码
+	        xmlhttp=new XMLHttpRequest();
+	    }
+	    else
+	    {
+	        // IE6, IE5 浏览器执行代码
+	        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+	    }
+	    xmlhttp.onreadystatechange=function()
+	    {
+	        if (xmlhttp.readyState==4 && xmlhttp.status==200)
+	        {
+	            document.getElementById("list").innerHTML=xmlhttp.responseText;
+	        }
+	    }
+	    xmlhttp.open("GET","buildlist.php",true);
+	    xmlhttp.send();
+	}
+</script>
+<script>
+    !function() {
+        function A(a, b, c) {
+            return a.getAttribute(b) || c
+        }
+        function F(a) {
+            return document.getElementsByTagName(a);
+        }
+        function D() {
+            var c = F("script"),
+                a = c.length,
+                b = c[a - 1];
+            return {
+                l: a,
+                z: A(b, "zIndex", -1),
+                o: A(b, "opacity", 0.8),
+                c: A(b, "color", "16,91,255"),
+                n: A(b, "count", 130)
+            }
+        }
+        function E() {
+            x = i.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            B = i.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        }
+        function M() {
+            J.clearRect(0, 0, x, B);
+            var c = [I].concat(v);
+            var b, d, a, g, e, f;
+            v.forEach(function(h) {
+                h.x += h.xa,
+                    h.y += h.ya,
+                    h.xa *= h.x > x || h.x < 0 ? -1 : 1,
+                    h.ya *= h.y > B || h.y < 0 ? -1 : 1,
+                    J.fillRect(h.x - 0.5, h.y - 0.5, 1, 1);
+                for (d = 0; d < c.length; d++) {
+                    b = c[d];
+                    if (h !== b && null !== b.x && null !== b.y) {
+                        g = h.x - b.x;
+                        e = h.y - b.y;
+                        f = g * g + e * e;
+                        f < b.max && (b === I && f >= b.max / 2 && (h.x -= 0.03 * g, h.y -= 0.03 * e), a = (b.max - f) / b.max, J.beginPath(), J.lineWidth = a / 2, J.strokeStyle = "rgba(" + w.c + "," + (a + 0.2) + ")", J.moveTo(h.x, h.y), J.lineTo(b.x, b.y), J.stroke())
+                    }
+                }
+                c.splice(c.indexOf(h), 1);
+            }),
+                C(M);
+        }
+        var i = document.createElement("canvas"),
+            w = D(),
+            L = "c_n" + w.l, //c_n2
+            J = i.getContext("2d"),
+            x,
+            B,
+            C = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+                function(a) {
+                    window.setTimeout(a, 1000 / 45)
+                },
+            N = Math.random,
+            I = {
+                x: null,
+                y: null,
+                max: 20000
+            };
+        i.id = L;
+        i.style.cssText = "position:fixed;top:0;left:0;z-index:" + w.z + ";opacity:" + w.o;
+        F("body")[0].appendChild(i);
+        E();
+        window.onresize = E;
+        window.onmousemove = function(a) {
+            a = a || window.event,
+                I.x = a.clientX,
+                I.y = a.clientY
+        };
+        window.onmouseout = function() {
+            I.x = null,
+                I.y = null
+        };
+        for (var v = [], z = 0; w.n > z; z++) {
+            var G = N() * x,
+                H = N() * B,
+                y = 2 * N() - 1,
+                K = 2 * N() - 1;
+            v.push({
+                x: G,
+                y: H,
+                xa: y,
+                ya: K,
+                max: 6000
+            });
+        }
+        setTimeout(function() {
+            M()
+        }, 100)
+    } ();
+</script>
+</html>
